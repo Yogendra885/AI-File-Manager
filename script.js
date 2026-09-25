@@ -1,0 +1,70 @@
+async function sendMessage() {
+
+    const input = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+
+    const message = input.value.trim();
+
+    if (message === "") {
+        return;
+    }
+
+    // Show user's message
+    chatBox.innerHTML += `
+        <div class="user-message">
+            ${message}
+        </div>
+    `;
+
+    // Clear input
+    input.value = "";
+
+    try {
+
+        // Send message to Flask
+        const response = await fetch("/command", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        // Show AI response
+        chatBox.innerHTML += `
+            <div class="bot-message">
+                ${data.response}
+            </div>
+        `;
+
+    } catch (error) {
+
+        chatBox.innerHTML += `
+            <div class="bot-message">
+                ❌ Unable to connect to the server.
+            </div>
+        `;
+    }
+
+    // Scroll to latest message
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+
+// Press Enter to send
+document.getElementById("user-input").addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+
+    }
+);
